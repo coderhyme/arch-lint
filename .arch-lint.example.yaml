@@ -1,0 +1,52 @@
+version: 1
+
+groups:
+  # Shared utilities - no dependency restrictions
+  shared:
+    paths:
+      - "shared/utils"
+      - "shared/types"
+
+  # Domain layer - only depends on shared
+  domain:
+    paths:
+      - "internal/domain{,/**}"
+    dependencies:
+      allow:
+        groups:
+          - shared
+        subPackages: true
+
+  # Repository layer - depends on domain and shared
+  repository:
+    paths:
+      - "internal/repository{,/**}"
+    dependencies:
+      allow:
+        groups:
+          - domain
+          - shared
+        subPackages: true
+      deny:
+        groups:
+          - api
+
+  # API layer - depends on domain, but not repository directly
+  api:
+    paths:
+      - "internal/api{,/**}"
+    dependencies:
+      allow:
+        groups:
+          - domain
+          - shared
+        patterns:
+          - "pkg/middleware/*"
+        relative:
+          - ../service
+        subPackages: true
+      deny:
+        groups:
+          - repository
+        patterns:
+          - "internal/legacy/*"
